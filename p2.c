@@ -25,7 +25,7 @@ Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
 Exits with code 0 if no errors.
 */
-int main (int argc, char *argv[]){
+int main (){
 
 }
 
