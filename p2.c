@@ -6,6 +6,14 @@ CS570
 Fall 2016
 John Carroll
 */
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <signal.h>
 #include "p2.h"
 
 #define SPACE ' '
@@ -17,16 +25,15 @@ John Carroll
 #define AMP '&'
 #define BACK '\\'
 
-void parse ();
+void parse();
 
 /*
-Main drives the program.
 Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
 Exits with code 0 if no errors.
 */
-int main (){
-
+int main(){
+	
 }
 
 /*
