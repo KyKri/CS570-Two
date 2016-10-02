@@ -25,6 +25,7 @@ John Carroll*/
 #define BACK '\\'
 
 void parse();
+void prompt();
 
 int c; /*Number of characters from input line*/
 char s[STORAGE]; /*Used to store input line*/
@@ -34,13 +35,25 @@ processes, handles redirection and kills children.
 Exits with code 0 if no errors.*/
 int main(){
 	for(;;){
-
+		prompt();
+		parse();
+		if( c == EOF )
+			break;
+		if( c == 0 )
+			continue;
 	}
+	printf("p2 terminated\n");
+	exit(0);
 }
 
 /*Parse cycles through the input received from stdin by calling
 getword.
 Parse sets flags when metacharacters are encountered.*/
 void parse(){
+	c = getword(s);
+}
 
+/*Issues the prompt "p2: "*/
+void prompt(){
+	(void)printf("p2: ");
 }
