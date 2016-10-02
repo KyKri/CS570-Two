@@ -1,4 +1,4 @@
-************************DUP2***********************************
+************************DUP2********************************************
 Standard C Library Functions                             dup2(3C)
 
 
@@ -28,7 +28,7 @@ RETURN VALUES
      returned and errno is set to indicate the error.
 
 
-************************EXECVP***********************************
+************************EXECVP******************************************
 System Calls                                              exec(2)
 
 
@@ -73,7 +73,7 @@ USAGE
      The environ array should not be  accessed  directly  by  the
      application.
 
-*****************************CHDIR*******************************
+*****************************CHDIR***************************************
 
 NAME
      chdir, fchdir - change working directory
@@ -102,7 +102,7 @@ RETURN VALUES
      errno is set to indicate the error.
 
 
-*****************************GETENV*******************************
+*****************************GETENV**************************************
 
 
 NAME
@@ -135,7 +135,7 @@ USAGE
      prevent two threads from successively accessing the environ-
      ment list using  getenv() or putenv(3C).
 
-*****************************EXIT*******************************
+*****************************EXIT*****************************************
 
 NAME
      exit, _exithandle - terminate process
@@ -169,7 +169,7 @@ DESCRIPTION
      indicate successful  or  unsuccessful  termination,  respec-
      tively.
 
-*****************************FORK*******************************
+*****************************FORK*****************************************
 
 
 NAME
@@ -204,7 +204,7 @@ DESCRIPTION
        o  signal handling settings (that  is,  SIG_DFL,  SIG_IGN,
           SIG_HOLD, function address)
 
-*****************************OPEN*******************************
+*****************************OPEN****************************************
 
 
 NAME
@@ -885,7 +885,7 @@ USAGE
 
 ATTRIBUTES
 
-******************************PERROR*****************************
+******************************PERROR************************************
 
 NAME
      perror, errno - print system error messages
@@ -928,7 +928,7 @@ USAGE
      setlocale(3C).
 
 
-******************************WAIT********************************
+******************************WAIT**************************************
 
 NAME
      wait - wait for child process to stop or terminate
@@ -1032,7 +1032,7 @@ USAGE
      tion is implemented as a call to waitpid(-1, stat_loc, 0).
 
 
-******************************STAT********************************
+******************************STAT****************************************
 
 NAME
      stat, lstat, fstat, fstatat - get file status
@@ -1524,7 +1524,7 @@ USAGE
 
 
 
-******************************PIPE*******************************
+******************************PIPE****************************************
 NAME
      pipe - create an interprocess channel
 
@@ -1568,7 +1568,7 @@ ERRORS
 
 
 
-******************************FFLUSH*****************************
+******************************FFLUSH***************************************
 
 NAME
      fflush - flush a stream
@@ -1675,7 +1675,7 @@ Standard C Library Functions                           fflush(3C)
                      or  the request was beyond the limits of the
                      device.
 
-******************************SIGNAL*****************************
+******************************SIGNAL***************************************
 
 
 NAME
@@ -1824,7 +1824,7 @@ Standard C Library Functions                           signal(3C)
      will be received.  It does not guarantee  the  reception  of
      every generated signal.
 
-******************************KILLPG*****************************
+******************************KILLPG************************************
 
 
 NAME

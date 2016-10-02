@@ -1,11 +1,10 @@
-/*
-P2
+/*P2
 Programmer: Kyle Krick
 Due: 10/12/16
 CS570
 Fall 2016
-John Carroll
-*/
+John Carroll*/
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -27,20 +26,21 @@ John Carroll
 
 void parse();
 
-/*
-Main prompts for input, handles EOF, handles creating new
+int c; /*Number of characters from input line*/
+char s[STORAGE]; /*Used to store input line*/
+
+/*Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
-Exits with code 0 if no errors.
-*/
+Exits with code 0 if no errors.*/
 int main(){
-	
+	for(;;){
+
+	}
 }
 
-/*
-Parse cycles through the input received from stdin by calling
+/*Parse cycles through the input received from stdin by calling
 getword.
-Parse sets flags when metacharacters are encountered.
-*/
+Parse sets flags when metacharacters are encountered.*/
 void parse(){
 
 }

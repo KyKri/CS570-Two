@@ -1,14 +1,11 @@
-/*
-Header file for p2 CS570 Fall 2016 SDSU
+/*Header file for p2 CS570 Fall 2016 SDSU
 This file includes necessary files and makes
-definitions for use in the program
-*/
+definitions for use in the program*/
 #include <stdio.h>
 #include "getword.h"
 #define MAXITEM 100 /*max number of words allowed per line*/
 
-/*
-p2 should prompt for input from stdin
+/*p2 should prompt for input from stdin
 p2 accepts 0 or more words per line.
 If it receives a 0 word line, it reissues the prompt.
 p2 terminates if EOF is the first word read.
@@ -25,5 +22,4 @@ p2 sends an error message for ambiguous inputs.
 p2, upon reading & at the end of a line, will start a new
 process to execute the file, print out its pid and contimue
 without waiting for the childs completion.
-p2 handles the cd command like other shells
-*/
+p2 handles the cd command like other shells*/
