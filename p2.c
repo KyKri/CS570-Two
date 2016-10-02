@@ -24,10 +24,11 @@ John Carroll*/
 #define AMP '&'
 #define BACK '\\'
 
-void parse();
 void prompt();
+void parse();
 
-int c; /*Number of characters from input line*/
+int c; /*Number chars per word*/
+int numwords; /*Number of words from input line*/
 char s[STORAGE]; /*Used to store input line*/
 
 /*Main prompts for input, handles EOF, handles creating new
@@ -39,21 +40,31 @@ int main(){
 		parse();
 		if( c == EOF )
 			break;
-		if( c == 0 )
+		if( numwords == 0 )
 			continue;
+		else
+			;
 	}
-	printf("p2 terminated\n");
+	printf("p2 terminated.\n");
 	exit(0);
+}
+
+/*Issues the prompt "p2: " prompting user for input*/
+void prompt(){
+	(void)printf("p2: ");
 }
 
 /*Parse cycles through the input received from stdin by calling
 getword.
 Parse sets flags when metacharacters are encountered.*/
 void parse(){
-	c = getword(s);
-}
-
-/*Issues the prompt "p2: "*/
-void prompt(){
-	(void)printf("p2: ");
+	for(;;){
+		c = getword(s);
+		if( c == EOF)
+			break;
+		else if( c == 0)
+			break;
+		else
+			numwords++;
+	}
 }
