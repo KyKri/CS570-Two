@@ -52,8 +52,8 @@ int main(){
 			continue;
 		else{
 			int i;
-			for( i=0; i<numwords; i++){
-				//(void) printf("line contains: %s\n", *(word + i));
+			for( i=0; i<numwords; i++ ){
+				;//(void) printf("line contains: %s\n", *(word + i));
 			}
 		}
 	}
@@ -75,9 +75,9 @@ void parse(){
 	for(;;){
 		//(void) printf ("lineptr: %x, line: %x\n", lineptr, &line);
 		c = getword(s);
-		if( c == EOF)
+		if( c == EOF )
 			break;
-		else if( c == 0)
+		else if( c == 0 )
 			break;
 		else{
 			*(word + numwords) = lineptr;
@@ -89,5 +89,10 @@ void parse(){
 			*lineptr++ = '\0';
 			numwords++;
 		}
+	}
+
+	int i;
+	for ( i=0; i < numwords; i++){
+		
 	}
 }
