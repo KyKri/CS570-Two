@@ -76,6 +76,8 @@ void parse(){
 	firstword = NULL;
 	lastword = NULL;
 	*lineptr = &line;
+	/*this loop adds words to the line buffer until c is EOF
+	or 0 (meaning getword hit)*/
 	for(;;){
 		c = getword(s);
 		if( c == EOF )
@@ -94,6 +96,9 @@ void parse(){
 		}
 	}
 
+	/*this loop cycles through each word in the line and sets
+	appropriate flags
+	it also does error checking*/
 	int i;
 	for ( i=0; i < numwords; i++){
 		if ( !(strcmp( word[i], "<")) ){
