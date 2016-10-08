@@ -56,7 +56,13 @@ int main(){
 		if( numwords == 0 )
 			continue;
 		else{
-			;
+			if ( firstword == NULL ){
+				printf("Command not found\n");
+			}else if ( (strcmp(firstword, "cd")) == 0 ){
+				;
+			}else{
+				;
+			}
 		}
 	}
 	(void) printf("p2 terminated.\n");
@@ -77,7 +83,7 @@ void parse(){
 	lastword = NULL;
 	*lineptr = &line;
 	/*this loop adds words to the line buffer until c is EOF
-	or 0 (meaning getword hit)*/
+	or 0 (meaning getword hit s newline)*/
 	for(;;){
 		c = getword(s);
 		if( c == EOF )
@@ -101,17 +107,17 @@ void parse(){
 	it also does error checking*/
 	int i;
 	for ( i=0; i < numwords; i++){
-		if ( !(strcmp( word[i], "<")) ){
+		if ( (strcmp( word[i], "<")) == 0 ){
 			inptr = word[i];
 			lastword = word[i];
-		}else if ( !(strcmp( *(word + i), ">")) ){
+		}else if ( (strcmp( *(word + i), ">")) == 0 ){
 			outptr = word[i];
 			lastword = word[i];
-		}else if ( !(strcmp( *(word + i), "$")) ){
+		}else if ( (strcmp( *(word + i), "$")) == 0 ){
 			;
-		}else if ( !(strcmp( *(word + i), "&")) ){
+		}else if ( (strcmp( *(word + i), "&")) == 0 ){
 			;
-		}else if ( !(strcmp( *(word + i), "|")) ){
+		}else if ( (strcmp( *(word + i), "|")) == 0 ){
 			pipeptr = word[i];
 			lastword = word[i];
 		}else{
@@ -119,7 +125,8 @@ void parse(){
 				if ( lastword == NULL ){
 					firstword = word[i];
 				}
-				else if ( (!strcmp( lastword, "<")) ||  (!strcmp( lastword, ">")))
+				else if ( (strcmp( lastword, "<") == 0) ||
+				 	(strcmp( lastword, ">") == 0))
 					;
 				else{
 					firstword = word[i];
