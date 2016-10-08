@@ -56,10 +56,7 @@ int main(){
 		if( numwords == 0 )
 			continue;
 		else{
-			int i;
-			for( i=0; i<numwords; i++ ){
-				;
-			}
+			;
 		}
 	}
 	(void) printf("p2 terminated.\n");
@@ -100,20 +97,30 @@ void parse(){
 	int i;
 	for ( i=0; i < numwords; i++){
 		if ( !(strcmp( word[i], "<")) ){
-			inptr = &word[i];
+			inptr = word[i];
+			lastword = word[i];
 		}else if ( !(strcmp( *(word + i), ">")) ){
-			outptr = &word[i];
+			outptr = word[i];
+			lastword = word[i];
 		}else if ( !(strcmp( *(word + i), "$")) ){
 			;
 		}else if ( !(strcmp( *(word + i), "&")) ){
 			;
 		}else if ( !(strcmp( *(word + i), "|")) ){
-			pipeptr = &word[i];
+			pipeptr = word[i];
+			lastword = word[i];
 		}else{
 			if ( firstword == NULL ){
-				firstword = &word[i];
+				if ( lastword == NULL ){
+					firstword = word[i];
+				}
+				else if ( (!strcmp( lastword, "<")) ||  (!strcmp( lastword, ">")))
+					;
+				else{
+					firstword = word[i];
+				}
 			}
-			lastword = &word[i];
+			lastword = word[i];
 		}
 	}
 }
