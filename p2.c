@@ -26,6 +26,7 @@ John Carroll*/
 
 void prompt();
 void parse();
+void sighandler();
 
 int c; /*Number chars per word*/
 int numwords; /*Number of words from input line*/
@@ -48,6 +49,9 @@ char *pipeptr; /*points to a pipe received in input line*/
 processes, handles redirection and kills children.
 Exits with code 0 if no errors.*/
 int main(){
+	/*dont want to kill ourself! send SIGTERM to a handler*/
+	signal(SIGTERM, sighandler);
+
 	for(;;){
 		prompt();
 		parse();
@@ -56,15 +60,24 @@ int main(){
 		if( numwords == 0 )
 			continue;
 		else{
-			if ( firstword == NULL ){
+			if( firstword == NULL ){
 				printf("Command not found\n");
-			}else if ( (strcmp(firstword, "cd")) == 0 ){
+			}else if( (strcmp(firstword, "cd")) == 0 ){
 				;
 			}else{
-				;
+				int kidpid;
+				if( (kidpid = fork()) == -1 ){
+					perror("Unable to fork");
+					exit (1);
+				}else if( kidpid == 0 ){
+					;
+				}else{
+					;
+				}
 			}
 		}
 	}
+	killpg(getpid(), SIGTERM);
 	(void) printf("p2 terminated.\n");
 	exit(0);
 }
@@ -135,4 +148,9 @@ void parse(){
 			lastword = word[i];
 		}
 	}
+}
+
+/*catches the SIGTERM signal to avoid killing p2*/
+void sighandler(){
+	;
 }
