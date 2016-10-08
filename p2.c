@@ -30,8 +30,9 @@ void parse();
 int c; /*Number chars per word*/
 int numwords; /*Number of words from input line*/
 char s[STORAGE]; /*Used to store each word from input*/
-char firstword[STORAGE]; /*Stores first word read from input*/
-	
+char *firstword; /*Points to first word read from input*/
+char *lastword; /*Points to last word read from input*/
+
 /*Storage * Maxitem because each word is a max size of storage and
 each line has a max word count of maxtitem therefore, the biggest
 possible line is (storage * maxitem) (+ 1 for null terminator)*/
@@ -39,8 +40,9 @@ char line[(STORAGE * MAXITEM) + 1]; /*Stores line read from input*/
 char *lineptr = &line[0]; /*Used to cycle through each word*/
 char *word[MAXITEM]; /*Used to mark the start of each word per line*/
 
-char **inptr; /*points to an input redirect received in input line*/
-char **outptr; /*points to an output redirect received in input line*/
+char *inptr; /*points to an input redirect received in input line*/
+char *outptr; /*points to an output redirect received in input line*/
+char *pipeptr; /*points to a pipe received in input line*/
 
 /*Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
@@ -74,6 +76,8 @@ getword.
 Parse sets flags when metacharacters are encountered.*/
 void parse(){
 	numwords = 0;
+	firstword = NULL;
+	lastword = NULL;
 	*lineptr = &line;
 	for(;;){
 		c = getword(s);
@@ -95,32 +99,21 @@ void parse(){
 
 	int i;
 	for ( i=0; i < numwords; i++){
-		if ( !(strcmp( *(word + i), "<")) ){
-			;
+		if ( !(strcmp( word[i], "<")) ){
+			inptr = &word[i];
 		}else if ( !(strcmp( *(word + i), ">")) ){
-			;
+			outptr = &word[i];
 		}else if ( !(strcmp( *(word + i), "$")) ){
 			;
 		}else if ( !(strcmp( *(word + i), "&")) ){
 			;
 		}else if ( !(strcmp( *(word + i), "|")) ){
-			;
+			pipeptr = &word[i];
+		}else{
+			if ( firstword == NULL ){
+				firstword = &word[i];
+			}
+			lastword = &word[i];
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
