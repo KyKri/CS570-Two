@@ -35,6 +35,7 @@ int numwords; /*Number of words from input line*/
 char s[STORAGE]; /*Used to store each word from input*/
 char *firstword; /*Points to first word read from input*/
 char *lastword; /*Points to last word read from input*/
+int background; /*set if & is lastword, used to background process*/
 
 /*Storage * Maxitem because each word is a max size of storage and
 each line has a max word count of maxtitem therefore, the biggest
@@ -73,7 +74,10 @@ int main(){
 			}/*handle the cd command*/
 			else if( (strcmp(firstword, "cd")) == 0 ){
 				/*If cd has no arguments, set its path to $HOME*/
-				if (newargv[1] == NULL){
+				if( newargc > 2 ){
+					(void) printf("cd received too many arguments\n");
+					continue;
+				}else if (newargv[1] == NULL){
 					/*make sure HOME is defined*/
 					if ( (getenv("HOME")) == NULL ){
 						(void) printf("HOME variable not defined.\n");
@@ -95,7 +99,12 @@ int main(){
 				CHK(execvp(newargv[0], newargv));
 			}else{
 				/*background handler*/
-				continue;
+				if ( (strcmp(lastword, "&")) == 0/*background*/ ){
+					(void) printf("%s [%d]\n", newargv[0], getpid());
+					continue;
+				}else{
+					continue;
+				}
 			}
 		}
 	}
@@ -118,6 +127,7 @@ void parse(){
 	firstword = NULL;
 	lastword = NULL;
 	inptr = infile = outfile = outptr = pipeptr = NULL;
+	background = 0;
 	*lineptr = &line;
 	/*this loop adds words to the line buffer until c is EOF
 	or 0 (meaning getword hit s newline)*/
@@ -190,6 +200,11 @@ void parse(){
 			lastword = word[i];
 		}
 	}
+
+	/*if ( (strcmp(newargv[newargc-1], "&")) == 0 ){
+		background = 1;
+		newargv[newargc-1] = NULL;
+	}*/
 }
 
 /*catches the SIGTERM signal to avoid killing p2*/
