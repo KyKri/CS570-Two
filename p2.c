@@ -44,17 +44,20 @@ char *lineptr = &line[0]; /*Used to cycle through each word*/
 char *word[MAXITEM]; /*Used to mark the start of each word per line*/
 
 char *inptr; /*points to an input redirect received in input line*/
+char *infile; /*points to filename for input*/
 char *outptr; /*points to an output redirect received in input line*/
+char *outfile; /*Points to filename for output*/
 char *pipeptr; /*points to a pipe received in input line*/
 
 char *newargv[MAXARGS]; /*used to send args to children*/
+int newargc; /*counts number of args sent to children*/
 
 /*Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
 Exits with code 0 if no errors.*/
 int main(){
 	/*dont want to kill ourself! send SIGTERM to a handler*/
-	signal(SIGTERM, SIG_IGN);
+	signal(SIGTERM, sighandler);
 
 	for(;;){
 		prompt();
@@ -69,17 +72,20 @@ int main(){
 			}else if( (strcmp(firstword, "cd")) == 0 ){
 				;
 			}else{
+				fflush(stdin);
+				fflush(stdout);
+				fflush(stderr);
 				int kidpid;
 				if( (kidpid = fork()) == -1 ){
 					perror("Unable to fork");
 					exit (1);
 				}else if( kidpid == 0 ){
-					newargv[0] = firstword;
-					newargv[MAXARGS + 1] = NULL;
-					CHK(execvp(firstword, newargv));
+					//newargv[0] = firstword;
+					//newargv[MAXARGS + 1] = NULL;
+					CHK(execvp(newargv[0], newargv));
 				}else{
 					/*background handler*/
-					;
+					continue;
 				}
 			}
 		}
@@ -99,8 +105,10 @@ getword.
 Parse sets flags when metacharacters are encountered.*/
 void parse(){
 	numwords = 0;
+	newargc = 0;
 	firstword = NULL;
 	lastword = NULL;
+	inptr = infile = outfile = outptr = pipeptr = NULL;
 	*lineptr = &line;
 	/*this loop adds words to the line buffer until c is EOF
 	or 0 (meaning getword hit s newline)*/
@@ -128,30 +136,48 @@ void parse(){
 	int i;
 	for ( i=0; i < numwords; i++){
 		if ( (strcmp( word[i], "<")) == 0 ){
-			inptr = word[i];
-			lastword = word[i];
+			if ( inptr != NULL ){
+				printf ("Error: Ambiguous input\n");
+				break;
+			}else{
+				inptr = word[i];
+				lastword = word[i];
+			}
 		}else if ( (strcmp( *(word + i), ">")) == 0 ){
-			outptr = word[i];
-			lastword = word[i];
-		}else if ( (strcmp( *(word + i), "$")) == 0 ){
-			;
-		}else if ( (strcmp( *(word + i), "&")) == 0 ){
-			;
+			if ( outptr != NULL ){
+				printf ("Error: too many output files\n");
+				break;
+			}else{
+				outptr = word[i];
+				lastword = word[i];
+			}
+		/*}else if ( (strcmp( *(word + i), "$")) == 0 ){
+			;*/
+		/*}else if ( (strcmp( *(word + i), "&")) == 0 ){
+			;*/
 		}else if ( (strcmp( *(word + i), "|")) == 0 ){
-			pipeptr = word[i];
-			lastword = word[i];
+			if ( pipeptr != NULL ){
+				printf ("Error: Too many pipes!\n");
+				break;
+			}else{
+				pipeptr = word[i];
+				lastword = word[i];
+			}
 		}else{
 			if ( firstword == NULL ){
 				if ( lastword == NULL ){
 					firstword = word[i];
 				}
 				else if ( (strcmp( lastword, "<") == 0) ||
-				 	(strcmp( lastword, ">") == 0))
-					;
-				else{
+				 	(strcmp( lastword, ">") == 0)){
+					lastword = word[i];
+					continue;
+				}else{
 					firstword = word[i];
 				}
 			}
+			newargv[newargc++] = word[i];
+			newargv[newargc] = '\0';
 			lastword = word[i];
 		}
 	}
