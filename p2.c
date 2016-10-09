@@ -93,10 +93,13 @@ int main(){
 			fflush(stderr);
 			int kidpid;
 			if( (kidpid = fork()) == -1 ){
-				perror("Unable to fork");
+				perror("Unable to fork.\n");
 				exit (1);
 			}else if( kidpid == 0 ){
-				CHK(execvp(newargv[0], newargv));
+				if( (execvp(newargv[0], newargv)) == -1 ){
+					(void) printf("Command not found.\n");
+					exit(2);
+				}
 			}else{
 				/*background handler*/
 				if ( (strcmp(lastword, "&")) == 0/*background*/ ){
