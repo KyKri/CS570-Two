@@ -23,6 +23,7 @@ John Carroll*/
 #define DLLR '$'
 #define AMP '&'
 #define BACK '\\'
+#define MAXARGS 20
 
 void prompt();
 void parse();
@@ -70,9 +71,13 @@ int main(){
 					perror("Unable to fork");
 					exit (1);
 				}else if( kidpid == 0 ){
-					;
+					char *newargv[MAXARGS];
+					newargv[0] = firstword;
+					newargv[1] = "Null&Void";
+					newargv[MAXARGS + 1] = NULL;
+					execvp(firstword, newargv);
 				}else{
-					;
+					break;
 				}
 			}
 		}
