@@ -14,6 +14,7 @@ John Carroll*/
 #include <errno.h>
 #include <signal.h>
 #include "p2.h"
+#include "/home/ma/cs570/CHK.h"
 
 #define SPACE ' '
 #define NEWLINE '\n'
@@ -46,12 +47,14 @@ char *inptr; /*points to an input redirect received in input line*/
 char *outptr; /*points to an output redirect received in input line*/
 char *pipeptr; /*points to a pipe received in input line*/
 
+char *newargv[MAXARGS]; /*used to send args to children*/
+
 /*Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
 Exits with code 0 if no errors.*/
 int main(){
 	/*dont want to kill ourself! send SIGTERM to a handler*/
-	signal(SIGTERM, sighandler);
+	signal(SIGTERM, SIG_IGN);
 
 	for(;;){
 		prompt();
@@ -71,13 +74,12 @@ int main(){
 					perror("Unable to fork");
 					exit (1);
 				}else if( kidpid == 0 ){
-					char *newargv[MAXARGS];
 					newargv[0] = firstword;
-					newargv[1] = "Null&Void";
 					newargv[MAXARGS + 1] = NULL;
-					execvp(firstword, newargv);
+					CHK(execvp(firstword, newargv));
 				}else{
-					break;
+					/*background handler*/
+					;
 				}
 			}
 		}
