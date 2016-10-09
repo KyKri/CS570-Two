@@ -68,25 +68,34 @@ int main(){
 			continue;
 		else{
 			if( firstword == NULL ){
-				printf("Command not found\n");
-			}else if( (strcmp(firstword, "cd")) == 0 ){
-				;
-			}else{
-				fflush(stdin);
-				fflush(stdout);
-				fflush(stderr);
-				int kidpid;
-				if( (kidpid = fork()) == -1 ){
-					perror("Unable to fork");
-					exit (1);
-				}else if( kidpid == 0 ){
-					//newargv[0] = firstword;
-					//newargv[MAXARGS + 1] = NULL;
-					CHK(execvp(newargv[0], newargv));
-				}else{
-					/*background handler*/
-					continue;
+				(void) printf("Command not found.\n");
+				continue;
+			}/*handle the cd command*/
+			else if( (strcmp(firstword, "cd")) == 0 ){
+				/*If cd has no arguments, set its path to $HOME*/
+				if (newargv[1] == NULL){
+					/*make sure HOME is defined*/
+					if ( (getenv("HOME")) == NULL ){
+						(void) printf("HOME variable not defined.\n");
+					}else{
+						chdir(getenv("HOME"));
+					}
+				}else if( (chdir(newargv[1])) == -1 ){
+					(void) printf("No such file or directory.\n");
 				}
+			}
+			fflush(stdin);
+			fflush(stdout);
+			fflush(stderr);
+			int kidpid;
+			if( (kidpid = fork()) == -1 ){
+				perror("Unable to fork");
+				exit (1);
+			}else if( kidpid == 0 ){
+				CHK(execvp(newargv[0], newargv));
+			}else{
+				/*background handler*/
+				continue;
 			}
 		}
 	}
@@ -139,7 +148,7 @@ void parse(){
 			if ( inptr != NULL ){
 				printf ("Error: Ambiguous input\n");
 				break;
-			}else{
+			}else{ /*TO-DO: flag infile (and error checking)*/
 				inptr = word[i];
 				lastword = word[i];
 			}
@@ -147,7 +156,7 @@ void parse(){
 			if ( outptr != NULL ){
 				printf ("Error: too many output files\n");
 				break;
-			}else{
+			}else{ /*TO-DO: flag outfile (and error checking)*/
 				outptr = word[i];
 				lastword = word[i];
 			}
