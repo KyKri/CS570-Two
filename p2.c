@@ -148,10 +148,10 @@ void parse(){
 		else if( c == 0 )
 			break;
 		else{
-			/*if (numwords+1 = MAXITEMS){
+			if( numwords+1 == MAXITEM ){
 				(void) printf("Too many args.\n");
 				break;
-			}*/
+			}
 			*(word + numwords) = lineptr;
 			int i;
 			for( i=0; i<c; i++){
@@ -172,7 +172,7 @@ void parse(){
 			if ( inptr != NULL ){
 				printf ("Error: Ambiguous input\n");
 				break;
-			}else{ /*TO-DO: flag infile (and error checking)*/
+			}else{
 				inptr = word[i];
 				lastword = word[i];
 				if( i+1 < MAXITEM ){
@@ -184,7 +184,7 @@ void parse(){
 			if ( outptr != NULL ){
 				printf ("Error: too many output files\n");
 				break;
-			}else{ /*TO-DO: flag outfile (and error checking)*/
+			}else{
 				outptr = word[i];
 				lastword = word[i];
 				if( i+1 < MAXITEM ){
