@@ -102,11 +102,12 @@ int main(){
 					exit(2);
 				}
 			}else{
-				/*background handler*/
+				/*background handler - dont wait for child*/
 				if ( (strcmp(lastword, "&")) == 0/*background*/ ){
 					(void) printf("%s [%d]\n", newargv[0], kidpid);
 					continue;
-				}else{
+				}/*Wait until child finishes*/
+				else{
 					for(;;){
 						int pid;
 						CHK(pid = wait(NULL));
@@ -148,10 +149,12 @@ void parse(){
 		else if( c == 0 )
 			break;
 		else{
+			/*Stop p2 from taking more than MAXITEM words per line*/
 			if( numwords+1 == MAXITEM ){
 				(void) printf("Too many args.\n");
 				break;
 			}
+			/*Create a pointer to first char of each word per line*/
 			*(word + numwords) = lineptr;
 			int i;
 			for( i=0; i<c; i++){
@@ -168,7 +171,9 @@ void parse(){
 	it also does error checking*/
 	int i;
 	for ( i=0; i < numwords; i++){
+		/*handle input redirection*/
 		if ( (strcmp( word[i], "<")) == 0 ){
+			/*If inptr not null, we've already seen one < this line*/
 			if ( inptr != NULL ){
 				printf ("Error: Ambiguous input\n");
 				break;
@@ -180,7 +185,9 @@ void parse(){
 					lastword = word[i];
 				}
 			}
-		}else if ( (strcmp( *(word + i), ">")) == 0 ){
+		}/*handle output redirection*/
+		else if ( (strcmp( *(word + i), ">")) == 0 ){
+			/*If outptr not null, we've already seen one > this line*/
 			if ( outptr != NULL ){
 				printf ("Error: too many output files\n");
 				break;
