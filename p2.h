@@ -4,6 +4,7 @@ definitions for use in the program*/
 #include <stdio.h>
 #include "getword.h"
 #define MAXITEM 100 /*max number of words allowed per line*/
+int slashfound;
 
 /*p2 should prompt for input from stdin
 p2 accepts 0 or more words per line.
