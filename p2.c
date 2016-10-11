@@ -51,9 +51,13 @@ char *outptr; /*points to an output redirect received in input line*/
 int outptrerr = 0; /*flag if ambiguous output detected*/
 char *outfile; /*Points to filename for output*/
 char *pipeptr; /*points to a pipe received in input line*/
+char *pipecmd; /*points to a command following a pipe*/
+int pipeptrerr = 0; /*flag if more than one | detected*/
 
-char *newargv[MAXARGS]; /*used to send args to children*/ /*FIX*/
+char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/ /*FIX*/
 int newargc; /*counts number of args sent to children*/
+char *newargv2[(STORAGE * MAXITEM + 1)];
+int newargc2;
 
 /*Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
@@ -65,9 +69,11 @@ int main(){
 	for(;;){
 		inptrerr = 0;
 		outptrerr = 0;
+		pipeptrerr = 0;
+		/*Shouldnt be here, just testing*/
+		//inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
 		int infiledes = NULL;
 		int outfiledes = NULL;
-		int filedes[2];
 
 		prompt();
 		parse();
@@ -101,17 +107,69 @@ int main(){
 				}
 				continue;
 			}/*make sure no ambiguous redirects/pipes detected*/
-			if ( inptrerr ){
+			if( inptrerr ){
 				continue;
 			}
-			if ( outptrerr ){
+			if( outptrerr ){
 				continue;
 			}
+			if( pipeptrerr ){
+				continue;
+			}
+/**********************Pipe***************************/
+			if( pipecmd != NULL ){
+				(void) printf("entered pipe handler\n");
+				int filedes[2];
+				CHK(pipe(filedes));
+				fflush(stdin);
+				fflush(stdout);
+				fflush(stderr);
+				pid_t kidpid1;
+				if( (kidpid1 = fork()) == -1 ){
+					perror("Child 1: Unable to fork.\n");
+					exit (1);
+				}else if( kidpid1 == 0 ){
+					CHK(dup2(filedes[1], STDOUT_FILENO));
+					CHK(close(filedes[0]));
+					CHK(close(filedes[1]));
+					if( (execvp(newargv[0], newargv)) == -1 ){
+						(void) printf("Child 1: Command not found.\n");
+						exit(2);
+					}
+				}
+				fflush(stdin);
+				fflush(stdout);
+				fflush(stderr);
+				pid_t kidpid2;
+				if( (kidpid2 = fork()) == -1){
+					perror("Child 2: Unable to fork.\n");
+					exit (1);
+				}else if (kidpid2 == 0){
+					CHK(dup2(filedes[0], STDIN_FILENO));
+					CHK(close(filedes[0]));
+					CHK(close(filedes[1]));
+					if( (execvp(pipecmd/*newargv2[0]*/, newargv2)) == -1 ){
+						(void) printf("Child 2: Command not found.\n");
+						exit(2);
+					}
+				}
+				close (filedes[0]);
+				close (filedes[1]);
+				for(;;){
+					pid_t pid;
+					CHK(pid = wait(NULL));
+					if(pid == kidpid2){
+						break;
+					}
+				}
+				continue;
+			}
+/***********************************************************/
 			/*Check for an infile, try to open*/
 			if( infile != NULL ){
 				infiledes = open(infile, O_RDONLY);
 				if( infiledes == -1 ){
-					(void) printf("Error: Can't read infile!\n");
+					(void) fprintf(stderr,"Error: Can't read infile!\n");
 					continue;
 				}
 			}
@@ -119,7 +177,7 @@ int main(){
 			if( outfile != NULL ){
 				outfiledes = open( outfile, O_WRONLY | O_EXCL | O_CREAT, 0600 );
 				if( outfiledes == -1 ){
-					(void) printf("Error: Can't open outfile!\n");
+					(void) fprintf(stderr,"Error: Can't open outfile!\n");
 					continue;
 				}
 			}
@@ -144,6 +202,7 @@ int main(){
 					exit(2);
 				}
 			}else{
+				/*close in/outfiles here?*/
 				/*background handler - dont wait for child*/
 				if ( (strcmp(lastword, "&")) == 0 /*background*/ ){
 					(void) printf("%s [%d]\n", newargv[0], kidpid);
@@ -179,7 +238,7 @@ void parse(){
 	newargc = 0;
 	firstword = NULL;
 	lastword = NULL;
-	inptr = infile = outfile = outptr = pipeptr = NULL;
+	inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
 	background = 0;
 	*lineptr = &line;
 	/*this loop adds words to the line buffer until c is EOF
@@ -225,7 +284,8 @@ void parse(){
 				lastword = word[i];
 				if( i+1 < MAXITEM ){
 					if( word[i+1] == NULL ){
-						(void) printf ("Error! Infile is Null!\n");
+						(void) fprintf (stderr,"Error! Infile is Null!\n");
+						inptrerr = 1;
 						break;
 					}
 					infile = word[++i];
@@ -244,29 +304,51 @@ void parse(){
 				lastword = word[i];
 				if( i+1 < MAXITEM ){
 					if( word[i+1] == NULL ){
-						(void) printf ("Error! Outfile is Null!\n");
+						(void) fprintf (stderr,"Error! Outfile is Null!\n");
+						outptrerr = 1;
 						break;
 					}
 					outfile = word[++i];
 					lastword = word[i];
 				}
 			}
-		/*}else if ( (strcmp( *(word + i), "$")) == 0 ){
-			;*/
-		}/*Makes sure & can be used for backgrounding, but not passed as arg*/
-		else if ( (strcmp( *(word + i), "&")) == 0 ){
+		}/*
+		else if ( (strcmp( *(word + i), "$")) == 0 ){
+			;
+		}*//*Makes sure & can be used for backgrounding, but not passed as arg*/
+		/*else if ( (strcmp( *(word + i), "&")) == 0 ){
+			if ( slashfound ){
+				printf("slashfound");
+			}
+			printf("slashfound is: %d\n", slashfound);
 			lastword = word[i];
-		}else if ( (strcmp( *(word + i), "|")) == 0 ){
+		}*/else if ( (strcmp( *(word + i), "|")) == 0 ){
 			if ( pipeptr != NULL ){
-				printf ("Error: Too many pipes!\n");
+				fprintf (stderr,"Error: Too many pipes!\n");
+				pipeptrerr = 1;
 				break;
 			}else{
 				pipeptr = word[i];
 				lastword = word[i];
+				if( i+1 < MAXITEM ){
+					if( word[i+1] == NULL ){
+						(void) fprintf (stderr,"Error! Pipecmd is Null!\n");
+						pipeptrerr = 1;
+						break;
+					}
+					pipecmd = word[++i];
+					lastword = word[i];
+				}
 			}
 		}else{
 			if( firstword == NULL ){
 				firstword = word[i];
+			}/*If we have a pipecmd, the rest of the line goes to pipecmd*/
+			else if( pipecmd != NULL){
+				newargv2[newargc2++] = word[i];
+				newargv2[newargc2] = '\0';
+				lastword = word[i];
+				(void) printf("put stuff in newarv2");
 			}
 			newargv[newargc++] = word[i];
 			newargv[newargc] = '\0';
