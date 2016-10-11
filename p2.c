@@ -57,6 +57,8 @@ int newargc; /*counts number of args sent to children*/
 processes, handles redirection and kills children.
 Exits with code 0 if no errors.*/
 int main(){
+	int infiledes;
+	int outfiledes;
 	/*dont want to kill ourself! send SIGTERM to a handler*/
 	signal(SIGTERM, sighandler);
 
@@ -82,11 +84,28 @@ int main(){
 					/*make sure HOME is defined*/
 					if ( (getenv("HOME")) == NULL ){
 						(void) printf("HOME variable not defined.\n");
+						continue;
 					}else{
 						chdir(getenv("HOME"));
+						continue;
 					}
 				}else if( (chdir(newargv[1])) == -1 ){
 					(void) printf("No such file or directory.\n");
+					continue;
+				}
+			}
+			if( infile != NULL ){
+				infiledes = open(infile, O_RDONLY);
+				if( infiledes == -1 ){
+					(void) printf("Error: Can't read infile!\n");
+					continue;
+				}
+			}
+			if( outfile != NULL ){
+				outfiledes = open( outfile, O_CREAT | O_RDWR );
+				if( outfiledes == -1 ){
+					(void) printf("Error: Can't open outfile!\n");
+					continue;
 				}
 			}
 			fflush(stdin);
@@ -181,6 +200,10 @@ void parse(){
 				inptr = word[i];
 				lastword = word[i];
 				if( i+1 < MAXITEM ){
+					if( word[i+1] == NULL ){
+						(void) printf ("Error! Infile is Null!\n");
+						break;
+					}
 					infile = word[++i];
 					lastword = word[i];
 				}
@@ -195,6 +218,10 @@ void parse(){
 				outptr = word[i];
 				lastword = word[i];
 				if( i+1 < MAXITEM ){
+					if( word[i+1] == NULL ){
+						(void) printf ("Error! Outfile is Null!\n");
+						break;
+					}
 					outfile = word[++i];
 					lastword = word[i];
 				}
