@@ -4,6 +4,7 @@ Professor: John Carroll
 Semester: Fall 2016
 Due Date: 09/21/16*/
 #include "getword.h"
+#include "p2.h"
 
 #define SPACE ' '
 #define NEWLINE '\n'
@@ -28,7 +29,7 @@ int getword(char *w){
 	/*numletters is the number of chars in current word*/
 	/*dllrfrst is set when DLLR is read, every return numletter
 	checks to see if dllrfrst is set, if it is, negate numletters*/
-	int curchar = 0, numletters = 0, dllrfrst = 0;
+	int curchar = 0, numletters = 0, dllrfrst = slashfound = 0;
 
 	while ( (curchar = getchar()) != EOF ){
 		/*Not processing word, newline entered - null terminate
@@ -37,7 +38,7 @@ int getword(char *w){
 			*w = '\0';
 			return 0;
 		}
-		/*Processing word, newline delimeter encountered - 
+		/*Processing word, newline delimeter encountered -
 		return size*/
 		else if( (char)curchar == NEWLINE ){
 			ungetc(NEWLINE , stdin);
@@ -74,21 +75,21 @@ int getword(char *w){
 			}
 		}
 		/*metachar is a word by itself*/
-		else if ( (numletters == 0) && (((char)curchar == LSSR) 
+		else if ( (numletters == 0) && (((char)curchar == LSSR)
 || ((char)curchar == GRTR) || ((char)curchar == PIPE) || ((char)curchar == AMP)) ){
 			*w++ = curchar;
 			*w = '\0';
 			return 1;
 		}
 		/*metachar delimits a word*/
-		else if ( ((char)curchar == LSSR) 
+		else if ( ((char)curchar == LSSR)
 || ((char)curchar == GRTR) || ((char)curchar == PIPE) || ((char)curchar == AMP) ){
 			ungetc(curchar , stdin);
 			if( dllrfrst )
 				numletters = numletters * -1;
 			return numletters;
 		}
-		/*size > 0 means not leading blank, blank delimeter 
+		/*size > 0 means not leading blank, blank delimeter
 		encountered - return size*/
 		else if( ((char)curchar == SPACE) && (numletters > 0) ){
 			if( dllrfrst )
@@ -115,7 +116,7 @@ int getword(char *w){
 				}
 				*w++ = curchar;
 				*w = '\0';
-				numletters++;				
+				numletters++;
 			}
 		}
 	}/*while*/
