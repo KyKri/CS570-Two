@@ -57,12 +57,14 @@ int newargc; /*counts number of args sent to children*/
 processes, handles redirection and kills children.
 Exits with code 0 if no errors.*/
 int main(){
-	int infiledes;
-	int outfiledes;
 	/*dont want to kill ourself! send SIGTERM to a handler*/
 	signal(SIGTERM, sighandler);
 
 	for(;;){
+		int infiledes = NULL;
+		int outfiledes = NULL;
+		int filedes[2];
+
 		prompt();
 		parse();
 		if( /* *firstword == EOF */ c == EOF )
@@ -93,7 +95,9 @@ int main(){
 					(void) printf("No such file or directory.\n");
 					continue;
 				}
+				continue;
 			}
+			/*Check for an infile, try to open*/
 			if( infile != NULL ){
 				infiledes = open(infile, O_RDONLY);
 				if( infiledes == -1 ){
@@ -101,8 +105,9 @@ int main(){
 					continue;
 				}
 			}
+			/*Check for an outfile, try to create*/
 			if( outfile != NULL ){
-				outfiledes = open( outfile, O_CREAT | O_RDWR );
+				outfiledes = open( outfile, O_WRONLY | O_EXCL | O_CREAT, 0600 );
 				if( outfiledes == -1 ){
 					(void) printf("Error: Can't open outfile!\n");
 					continue;
@@ -116,13 +121,21 @@ int main(){
 				perror("Unable to fork.\n");
 				exit (1);
 			}else if( kidpid == 0 ){
+				if( infiledes != NULL ){
+					dup2(infiledes, STDIN_FILENO);
+					CHK(close(infiledes));
+				}
+				if( outfiledes != NULL ){
+					dup2(outfiledes, STDOUT_FILENO);
+					CHK(close(outfiledes));
+				}
 				if( (execvp(newargv[0], newargv)) == -1 ){
 					(void) printf("Command not found.\n");
 					exit(2);
 				}
 			}else{
 				/*background handler - dont wait for child*/
-				if ( (strcmp(lastword, "&")) == 0/*background*/ ){
+				if ( (strcmp(lastword, "&")) == 0 /*background*/ ){
 					(void) printf("%s [%d]\n", newargv[0], kidpid);
 					continue;
 				}/*Wait until child finishes*/
@@ -251,6 +264,7 @@ void parse(){
 	/*if ( (strcmp(newargv[newargc-1], "&")) == 0 ){
 		background = 1;
 		newargv[newargc-1] = NULL;
+		newargc--;
 	}*/
 }
 
