@@ -45,12 +45,14 @@ char *lineptr = &line[0]; /*Used to cycle through each word*/
 char *word[MAXITEM]; /*Used to mark the start of each word per line*/
 
 char *inptr; /*points to an input redirect received in input line*/
+int inptrerr = 0; /*checks to see if ambiguous input detected*/
 char *infile; /*points to filename for input*/
 char *outptr; /*points to an output redirect received in input line*/
+int outptrerr = 0;
 char *outfile; /*Points to filename for output*/
 char *pipeptr; /*points to a pipe received in input line*/
 
-char *newargv[MAXARGS]; /*used to send args to children*/
+char *newargv[MAXARGS]; /*used to send args to children*/ /*FIX*/
 int newargc; /*counts number of args sent to children*/
 
 /*Main prompts for input, handles EOF, handles creating new
@@ -61,6 +63,8 @@ int main(){
 	signal(SIGTERM, sighandler);
 
 	for(;;){
+		inptrerr = 0;
+		outptrerr = 0;
 		int infiledes = NULL;
 		int outfiledes = NULL;
 		int filedes[2];
@@ -95,6 +99,12 @@ int main(){
 					(void) printf("No such file or directory.\n");
 					continue;
 				}
+				continue;
+			}/*make sure no ambiguous redirects/pipes detected*/
+			if ( inptrerr ){
+				continue;
+			}
+			if ( outptrerr ){
 				continue;
 			}
 			/*Check for an infile, try to open*/
@@ -207,7 +217,8 @@ void parse(){
 		if ( (strcmp( word[i], "<")) == 0 ){
 			/*If inptr not null, we've already seen one < this line*/
 			if ( inptr != NULL ){
-				printf ("Error: Ambiguous input\n");
+				fprintf (stderr,"Error: Ambiguous input\n");
+				inptrerr = 1;
 				break;
 			}else{
 				inptr = word[i];
@@ -225,7 +236,8 @@ void parse(){
 		else if ( (strcmp( *(word + i), ">")) == 0 ){
 			/*If outptr not null, we've already seen one > this line*/
 			if ( outptr != NULL ){
-				printf ("Error: too many output files\n");
+				fprintf (stderr, "Error: too many output files\n");
+				outptrerr = 1;
 				break;
 			}else{
 				outptr = word[i];
