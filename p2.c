@@ -45,10 +45,10 @@ char *lineptr = &line[0]; /*Used to cycle through each word*/
 char *word[MAXITEM]; /*Used to mark the start of each word per line*/
 
 char *inptr; /*points to an input redirect received in input line*/
-int inptrerr = 0; /*checks to see if ambiguous input detected*/
+int inptrerr = 0; /*flag if ambiguous input detected*/
 char *infile; /*points to filename for input*/
 char *outptr; /*points to an output redirect received in input line*/
-int outptrerr = 0;
+int outptrerr = 0; /*flag if ambiguous output detected*/
 char *outfile; /*Points to filename for output*/
 char *pipeptr; /*points to a pipe received in input line*/
 
@@ -253,8 +253,9 @@ void parse(){
 			}
 		/*}else if ( (strcmp( *(word + i), "$")) == 0 ){
 			;*/
-		/*}else if ( (strcmp( *(word + i), "&")) == 0 ){
-			;*/
+		}/*Makes sure & can be used for backgrounding, but not passed as arg*/
+		else if ( (strcmp( *(word + i), "&")) == 0 ){
+			lastword = word[i];
 		}else if ( (strcmp( *(word + i), "|")) == 0 ){
 			if ( pipeptr != NULL ){
 				printf ("Error: Too many pipes!\n");
