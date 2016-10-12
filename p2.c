@@ -84,26 +84,26 @@ int main(){
 			continue;
 		else{
 			if( firstword == NULL ){
-				(void) printf("NULL Command not found.\n");
+				(void) fprintf(stderr,"NULL Command not found.\n");
 				continue;
 			}/*handle the cd command*/
 			else if( (strcmp(firstword, "cd")) == 0 ){
 				/*Make sure cd has only 1 arg*/
 				if( newargc > 2 ){
-					(void) printf("cd received too many arguments\n");
+					(void) fprintf(stderr,"cd received too many arguments\n");
 					continue;
 				}/*If cd has no arguments, set its path to $HOME*/
 				else if (newargv[1] == NULL){
 					/*make sure HOME is defined*/
 					if ( (getenv("HOME")) == NULL ){
-						(void) printf("HOME variable not defined.\n");
+						(void) fprintf(stderr,"HOME variable not defined.\n");
 						continue;
 					}else{
 						chdir(getenv("HOME"));
 						continue;
 					}
 				}else if( (chdir(newargv[1])) == -1 ){
-					(void) printf("No such file or directory.\n");
+					(void) fprintf(stderr,"No such file or directory.\n");
 					continue;
 				}
 				continue;
@@ -142,6 +142,7 @@ int main(){
 						continue;
 					}
 				}
+/************************kid1********************************/
 				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
@@ -161,16 +162,16 @@ int main(){
 						exit(2);
 					}
 				}
-				else{
+				/*else{
 					for(;;){
-						int pid;
+						pid_t pid;
 						CHK(pid = wait(NULL));
 						if (pid == kidpid1){
 							break;
 						}
 					}
-				}
-
+				}*/
+/*******************kid 2***************************/
 				fflush(stdin);
 				fflush(stdout);
 				fflush(stderr);
@@ -185,21 +186,28 @@ int main(){
 					}
 					CHK(close(fildes[0]));
 					CHK(close(fildes[1]));
-					/*trying to give pipe correct args*/
-					if( (execvp(pipecmd, newargv+pipearg1)) == -1 ){
+					/*testing to give pipe correct args*/
+					if( (execvp(newargv2[0]/*pipecmd*/, newargv2/*newargv+pipearg1*/)) == -1 ){
 						(void) printf("kid 2: Command not found.\n");
 						exit(2);
 					}
 				}
-				else{
+				/*else{*/
+				CHK(close(fildes[0]));
+				CHK(close(fildes[1]));
+				if ( (strcmp(lastword, "&")) == 0 /*background*/ ){
+					(void) printf("%s [%d]\n", newargv[0], kidpid2);
+					/*background /dev/null here?*/
+					continue;
+				}/*Wait until child finishes*/
 					for(;;){
-						int pid;
+						pid_t pid;
 						CHK(pid = wait(NULL));
 						if (pid == kidpid2){
 							break;
 						}
 					}
-				}
+				/*}*/
 				continue;
 			}
 /***********************************pipe**************************/
@@ -245,11 +253,12 @@ int main(){
 				/*background handler - dont wait for child*/
 				if ( (strcmp(lastword, "&")) == 0 /*background*/ ){
 					(void) printf("%s [%d]\n", newargv[0], kidpid);
+					/*background /dev/null here?*/
 					continue;
 				}/*Wait until child finishes*/
 				else{
 					for(;;){
-						int pid;
+						pid_t pid;
 						CHK(pid = wait(NULL));
 						if (pid == kidpid){
 							break;
@@ -357,11 +366,12 @@ void parse(){
 			;
 		}*//*Makes sure & can be used for backgrounding, but not passed as arg*/
 		/*else if ( (strcmp( *(word + i), "&")) == 0 ){
-			if ( slashfound ){
+			/*if ( slashfound ){
 				printf("slashfound");
 			}
 			printf("slashfound is: %d\n", slashfound);
 			lastword = word[i];
+			;
 		}*/else if ( (strcmp( *(word + i), "|")) == 0 ){
 			if ( pipeptr != NULL ){
 				fprintf (stderr,"Error: Too many pipes!\n");
@@ -377,6 +387,9 @@ void parse(){
 						break;
 					}
 					pipecmd = word[++i];
+					newargv[++newargc] = NULL;
+					newargv2[0] = word[i];
+					newargc2++;
 					pipearg1 = i;
 					lastword = word[i];
 				}
@@ -385,6 +398,13 @@ void parse(){
 			if( firstword == NULL ){
 				firstword = word[i];
 			}/*If we have a pipecmd, the rest of the line goes to pipecmd*/
+			else if( pipecmd != NULL){
+				/*testing to get pipecmd in newargv2[0]*/
+				/*newargv2[newargc2++] = word[i];*/
+				newargv2[newargc2++] = word[i];
+				newargv2[newargc2] = '\0';
+				lastword = word[i];
+			}
 			newargv[newargc++] = word[i];
 			newargv[newargc] = '\0';
 			lastword = word[i];
