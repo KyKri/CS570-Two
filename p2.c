@@ -54,6 +54,7 @@ char *pipeptr; /*points to a pipe received in input line*/
 char *pipecmd; /*points to a command following a pipe*/
 int pipeptrerr = 0; /*flag if more than one | detected*/
 int pipearg1 = 0;
+char *nullfile;
 
 char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/ /*FIX*/
 int newargc; /*counts number of args sent to children*/
@@ -75,6 +76,7 @@ int main(){
 		//inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
 		int infiledes = NULL;
 		int outfiledes = NULL;
+		int nullinput = NULL;
 
 		prompt();
 		parse();
@@ -228,6 +230,14 @@ int main(){
 					continue;
 				}
 			}
+			/*if( (strcmp(lastword, "&")) == 0 ){
+				nullfile = "/dev/null";
+				nullinput = open(nullfile, O_RDONLY);
+				if( nullinput == -1 ){
+					(void) fprintf(stderr,"Error: Can't read nullfile!\n");
+					continue;
+				}
+			}*/
 			fflush(stdin);
 			fflush(stdout);
 			fflush(stderr);
@@ -244,6 +254,10 @@ int main(){
 					dup2(outfiledes, STDOUT_FILENO);
 					CHK(close(outfiledes));
 				}
+				/*if( (strcmp(lastword, "&")) == 0 ){
+					dup2(nullinput,STDIN_FILENO);
+					CHK(close(nullinput));
+				}*/
 				if( (execvp(newargv[0], newargv)) == -1 ){
 					(void) printf("Command not found.\n");
 					exit(2);
@@ -301,7 +315,7 @@ void parse(){
 		else{
 			/*Stop p2 from taking more than MAXITEM words per line*/
 			if( numwords+1 == MAXITEM ){
-				(void) printf("Too many args.\n");
+				(void) fprintf(stderr,"Too many args.\n");
 				break;
 			}
 			/*Create a pointer to first char of each word per line*/
@@ -410,11 +424,12 @@ void parse(){
 			lastword = word[i];
 		}
 	}
-
-	/*if ( (strcmp(newargv[newargc-1], "&")) == 0 ){
+	/*if ( c == EOF){
+		;
+	}
+	else if ( (strcmp(newargv[newargc-1], "&")) == 0 ){
 		background = 1;
-		newargv[newargc-1] = NULL;
-		newargc--;
+		newargv[--newargc] = NULL;
 	}*/
 }
 
