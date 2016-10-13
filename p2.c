@@ -303,14 +303,27 @@ void parse(){
 	lastword = NULL;
 	inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
 	background = 0;
-	*lineptr = &line;
+	*lineptr = (int)&line;
+	int founddllr = 0;
 	/*this loop adds words to the line buffer until c is EOF
 	or 0 (meaning getword hit s newline)*/
 	for(;;){
-		c = getword(s);
-		if( c == EOF )
+		if(founddllr)
 			break;
-		else if( c == 0 )
+		c = getword(s);
+		/*Handle $ as EOF*/
+		if( c == -1 ){
+			if( (s[0]=='$') && (numwords > 0) ){
+				ungetc('$', stdin);
+				/*Make sure it can get added to the line*/
+				c = 1;
+				founddllr = 1;
+			}
+			else{
+				break;
+			}
+		}
+		if( c == 0 )
 			break;
 		else{
 			/*Stop p2 from taking more than MAXITEM words per line*/
