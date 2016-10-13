@@ -35,6 +35,7 @@ int numwords; /*Number of words from input line*/
 char s[STORAGE]; /*Used to store each word from input*/
 char *firstword; /*Points to first word read from input*/
 char *lastword; /*Points to last word read from input*/
+char *lastword2; /*Points to last word read from input for pipecmd*/
 int background; /*set if & is lastword, used to background process*/
 
 /*Storage * Maxitem because each word is a max size of storage and
@@ -56,10 +57,10 @@ int pipeptrerr = 0; /*flag if more than one | detected*/
 int pipearg1 = 0;
 char *nullfile;
 
-char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/ /*FIX*/
+char *newargv[(STORAGE * MAXITEM) + 1]; /*used to send args to children*/
 int newargc; /*counts number of args sent to children*/
 char *newargv2[(STORAGE * MAXITEM + 1)];
-int newargc2;
+int newargc2; /*counts number of args sent to children*/
 
 /*Main prompts for input, handles EOF, handles creating new
 processes, handles redirection and kills children.
@@ -197,7 +198,8 @@ int main(){
 				/*else{*/
 				CHK(close(fildes[0]));
 				CHK(close(fildes[1]));
-				if ( (strcmp(lastword, "&")) == 0 /*background*/ ){
+				/*testing lastword2*/
+				if ( (strcmp(lastword2, "&")) == 0 /*background*/ ){
 					(void) printf("%s [%d]\n", newargv[0], kidpid2);
 					/*background /dev/null here?*/
 					continue;
@@ -212,7 +214,7 @@ int main(){
 				/*}*/
 				continue;
 			}
-/***********************************pipe**************************/
+/***********************************pipe end**************************/
 
 			/*Check for an infile, try to open*/
 			if( infile != NULL ){
@@ -230,14 +232,14 @@ int main(){
 					continue;
 				}
 			}
-			/*if( (strcmp(lastword, "&")) == 0 ){
+			if( (strcmp(lastword, "&")) == 0 ){
 				nullfile = "/dev/null";
 				nullinput = open(nullfile, O_RDONLY);
 				if( nullinput == -1 ){
 					(void) fprintf(stderr,"Error: Can't read nullfile!\n");
 					continue;
 				}
-			}*/
+			}
 			fflush(stdin);
 			fflush(stdout);
 			fflush(stderr);
@@ -254,16 +256,15 @@ int main(){
 					dup2(outfiledes, STDOUT_FILENO);
 					CHK(close(outfiledes));
 				}
-				/*if( (strcmp(lastword, "&")) == 0 ){
+				if( ((strcmp(lastword, "&")) == 0) && (infiledes == NULL) ){
 					dup2(nullinput,STDIN_FILENO);
 					CHK(close(nullinput));
-				}*/
+				}
 				if( (execvp(newargv[0], newargv)) == -1 ){
 					(void) printf("Command not found.\n");
 					exit(2);
 				}
 			}else{
-				/*close in/outfiles here?*/
 				/*background handler - dont wait for child*/
 				if ( (strcmp(lastword, "&")) == 0 /*background*/ ){
 					(void) printf("%s [%d]\n", newargv[0], kidpid);
@@ -298,9 +299,11 @@ Parse sets flags when metacharacters are encountered.*/
 void parse(){
 	numwords = 0;
 	newargc = 0;
+	newargc2 = 0;
 	pipearg1 = 0;
 	firstword = NULL;
 	lastword = NULL;
+	lastword2 = NULL;
 	inptr = infile = outfile = outptr = pipeptr = pipecmd = NULL;
 	background = 0;
 	*lineptr = (int)&line;
@@ -364,6 +367,11 @@ void parse(){
 						inptrerr = 1;
 						break;
 					}
+					if ( strcmp(word[i+1], "&") == 0 ){
+						(void) fprintf (stderr,"Error! Infile is Null!\n");
+						inptrerr = 1;
+						break;
+					}
 					infile = word[++i];
 					lastword = word[i];
 				}
@@ -380,6 +388,11 @@ void parse(){
 				lastword = word[i];
 				if( i+1 < MAXITEM ){
 					if( word[i+1] == NULL ){
+						(void) fprintf (stderr,"Error! Outfile is Null!\n");
+						outptrerr = 1;
+						break;
+					}
+					if( strcmp(word[i+1], "&") == 0 ){
 						(void) fprintf (stderr,"Error! Outfile is Null!\n");
 						outptrerr = 1;
 						break;
@@ -430,20 +443,32 @@ void parse(){
 				/*newargv2[newargc2++] = word[i];*/
 				newargv2[newargc2++] = word[i];
 				newargv2[newargc2] = '\0';
-				lastword = word[i];
+				lastword2 = word[i];
+				/*^^may need to become lastword2 ^^*/
 			}
 			newargv[newargc++] = word[i];
 			newargv[newargc] = '\0';
 			lastword = word[i];
 		}
 	}
-	/*if ( c == EOF){
+	if ( c == EOF){
+		;
+	}
+	if (newargv[newargc-1] == NULL){
 		;
 	}
 	else if ( (strcmp(newargv[newargc-1], "&")) == 0 ){
 		background = 1;
 		newargv[--newargc] = NULL;
-	}*/
+	}
+	if( newargv2[newargc2-1] == NULL){
+		;
+	}
+	else if (pipecmd != NULL){
+		if ( (strcmp(newargv2[newargc2-1], "&")) == 0 ){
+			newargv2[--newargc2] = NULL;
+		}
+	}
 }
 
 /*catches the SIGTERM signal to avoid killing p2*/
