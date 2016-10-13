@@ -200,7 +200,7 @@ int main(){
 				CHK(close(fildes[1]));
 				/*testing lastword2*/
 				if ( (strcmp(lastword2, "&")) == 0 /*background*/ ){
-					(void) printf("%s [%d]\n", newargv[0], kidpid2);
+					(void) printf("%s [%d]\n", newargv2[0], kidpid2);
 					/*background /dev/null here?*/
 					continue;
 				}/*Wait until child finishes*/
@@ -427,7 +427,8 @@ void parse(){
 						break;
 					}
 					pipecmd = word[++i];
-					newargv[++newargc] = NULL;
+					/*newargv[++newargc] = NULL;*/
+					newargv[newargc-1] = NULL;
 					newargv2[0] = word[i];
 					newargc2++;
 					pipearg1 = i;
