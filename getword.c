@@ -72,6 +72,7 @@ int getword(char *w){
 				*w++ = curchar;
 				*w = '\0';
 				numletters++;
+				slashfound = numletters-1;
 			}
 		}
 		/*metachar is a word by itself*/
@@ -124,7 +125,7 @@ int getword(char *w){
 	/*EOF encountered, if in middle of word return the word, put EOF
 	back so that we immediately quit upon the next call*/
 	if((char)curchar == EOF){
-		if ( numletters > 0 ){
+		if( numletters > 0 ){
 			if( dllrfrst )
 				numletters = numletters * -1;
 			return numletters;
