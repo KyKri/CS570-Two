@@ -427,8 +427,7 @@ void parse(){
 						break;
 					}
 					pipecmd = word[++i];
-					/*newargv[++newargc] = NULL;*/
-					newargv[newargc-1] = NULL;
+					newargv[++newargc] = NULL;
 					newargv2[0] = word[i];
 					newargc2++;
 					pipearg1 = i;
